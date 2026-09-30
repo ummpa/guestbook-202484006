@@ -42,6 +42,7 @@ describe("작성", () => {
         message: "국물이 진하고 깔끔해요.",
         createdAt: new Date("2026-10-01T09:00:00Z"),
         updatedAt: null,
+        restaurantEntryCount: 1,
       },
     ]);
   });
@@ -90,6 +91,47 @@ describe("조회", () => {
     await write({ message: "셋째 글" });
 
     expect((await guestbook.listEntries()).map((e) => e.message)).toEqual(["셋째 글", "둘째 글", "첫 글"]);
+  });
+
+  test("오래된 순으로 볼 수 있다", async () => {
+    await write({ message: "첫 글" });
+    await write({ message: "둘째 글" });
+
+    expect((await guestbook.listEntries("oldest")).map((e) => e.message)).toEqual(["첫 글", "둘째 글"]);
+  });
+
+  test("별점 높은 순으로 볼 수 있고, 별점이 같으면 최신 글이 먼저다", async () => {
+    await write({ message: "3점", rating: 3 });
+    await write({ message: "5점 먼저", rating: 5 });
+    await write({ message: "1점", rating: 1 });
+    await write({ message: "5점 나중", rating: 5 });
+
+    expect((await guestbook.listEntries("rating")).map((e) => e.message)).toEqual([
+      "5점 나중",
+      "5점 먼저",
+      "3점",
+      "1점",
+    ]);
+  });
+
+  test("방명록 많은 순: 같은 식당(이름+지역)에 글이 많은 식당의 글이 먼저 온다", async () => {
+    await write({ restaurant: "을지로 냉면", region: "서울", message: "냉면 1" });
+    await write({ restaurant: "할매국밥", region: "부산", message: "국밥 1" });
+    await write({ restaurant: " 할매국밥 ", region: "부산", message: "국밥 2" });
+    await write({ restaurant: "할매국밥", region: "대구", message: "대구 국밥" });
+    await write({ restaurant: "할매국밥", region: "부산", message: "국밥 3" });
+
+    const entries = await guestbook.listEntries("popular");
+
+    expect(entries.map((e) => e.message)).toEqual(["국밥 3", "국밥 2", "국밥 1", "대구 국밥", "냉면 1"]);
+    expect(entries.map((e) => e.restaurantEntryCount)).toEqual([3, 3, 3, 1, 1]);
+  });
+
+  test("모르는 정렬 기준이면 최신순이다", async () => {
+    await write({ message: "첫 글" });
+    await write({ message: "둘째 글" });
+
+    expect((await guestbook.listEntries("nope" as never)).map((e) => e.message)).toEqual(["둘째 글", "첫 글"]);
   });
 
   test("글을 수정해도 목록 순서는 바뀌지 않는다", async () => {

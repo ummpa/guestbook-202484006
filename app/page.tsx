@@ -1,7 +1,9 @@
-import { getGuestbook } from "@/lib/guestbook";
+import { getGuestbook, isSort, type Sort } from "@/lib/guestbook";
 import { EntryActions } from "./entry-actions";
 import { foodEmoji, regionColor } from "./food";
 import { formatDateTime } from "./format";
+import { SORT_OPTIONS } from "./sort-options";
+import { SortSelect } from "./sort-select";
 import { Stars } from "./stars";
 import { WriteForm } from "./write-form";
 
@@ -17,15 +19,18 @@ const HERO_FOOD: [string, string, string, string][] = [
   ["🌶️", "right-[32%] bottom-[4%] text-3xl", "-14deg", "1.5s"],
 ];
 
-export default async function Home() {
-  const entries = await getGuestbook().listEntries();
+export default async function Home({ searchParams }: PageProps<"/">) {
+  const { sort: sortParam } = await searchParams;
+  const sort: Sort = isSort(sortParam) ? sortParam : "latest";
+  const entries = await getGuestbook().listEntries(sort);
+  const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)!.label;
   const regions = new Set(entries.map((e) => e.region)).size;
   const average = entries.length ? entries.reduce((sum, e) => sum + e.rating, 0) / entries.length : null;
 
   return (
     <main id="top" className="page">
       {/* 첫 화면: 여기가 맛집 모음 방명록이라는 걸 한눈에 */}
-      <section className="relative overflow-hidden rounded-[2rem] border-2 border-line bg-gradient-to-br from-orange-soft via-paper to-amber-100 px-6 py-12 text-center shadow-[0_6px_0_var(--line)] sm:py-16">
+      <section className="relative overflow-hidden rounded-4xl border-2 border-line bg-linear-to-br from-orange-soft via-paper to-amber-100 px-6 py-12 text-center shadow-[0_6px_0_var(--line)] sm:py-16">
         {HERO_FOOD.map(([emoji, position, tilt, delay]) => (
           <span
             key={emoji}
@@ -68,10 +73,15 @@ export default async function Home() {
       </section>
 
       <section id="list" className="flex scroll-mt-20 flex-col gap-4">
-        <h2 className="font-display flex items-end gap-2 text-2xl">
-          🍽️ 맛집 방명록
-          <span className="muted font-sans text-sm">최신순 · {entries.length}개</span>
-        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-display flex items-end gap-2 text-2xl">
+            🍽️ 맛집 방명록
+            <span className="muted font-sans text-sm">
+              {sortLabel} · {entries.length}개
+            </span>
+          </h2>
+          <SortSelect value={sort} />
+        </div>
 
         {entries.length === 0 && (
           <div className="card flex flex-col items-center gap-2 py-10 text-center">
@@ -98,7 +108,12 @@ export default async function Home() {
                   {foodEmoji(entry.restaurant)}
                 </span>
                 <div className="flex min-w-0 flex-col gap-1">
-                  <span className={`chip w-fit ${regionColor(entry.region)}`}>📍 {entry.region}</span>
+                  <span className="flex flex-wrap gap-1">
+                    <span className={`chip w-fit ${regionColor(entry.region)}`}>📍 {entry.region}</span>
+                    {entry.restaurantEntryCount > 1 && (
+                      <span className="chip w-fit bg-mustard/40 text-ink">📒 방명록 {entry.restaurantEntryCount}개</span>
+                    )}
+                  </span>
                   <h3 className="font-display wrap-break-word text-xl leading-snug">{entry.restaurant}</h3>
                   <Stars value={entry.rating} />
                 </div>

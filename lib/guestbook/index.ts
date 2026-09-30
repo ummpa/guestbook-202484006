@@ -9,4 +9,4 @@ export function getGuestbook(): Guestbook {
   return instance;
 }
 
-export type { ChangeError, CreateError, Entry } from "./guestbook.ts";
+export { isSort, type ChangeError, type CreateError, type Entry, type Sort } from "./guestbook.ts";

@@ -23,7 +23,24 @@ export type Entry = {
   message: string;
   createdAt: Date;
   updatedAt: Date | null;
+  // 같은 식당(이름+지역)에 남겨진 글 수, 이 글 포함.
+  restaurantEntryCount: number;
 };
+
+export type Sort = "latest" | "oldest" | "rating" | "popular";
+
+// 최신순이 기본. 동점은 항상 최신 글이 먼저.
+const ORDER_BY: Record<Sort, string> = {
+  latest: "created_at DESC, id DESC",
+  oldest: "created_at ASC, id ASC",
+  rating: "rating DESC, created_at DESC, id DESC",
+  // 글이 많은 식당끼리 모아서, 같은 수면 최근에 글이 달린 식당이 먼저.
+  popular: "restaurant_entry_count DESC, restaurant_latest DESC, restaurant, region, created_at DESC, id DESC",
+};
+
+export function isSort(value: unknown): value is Sort {
+  return typeof value === "string" && Object.hasOwn(ORDER_BY, value);
+}
 
 export type CreateError =
   | "invalid-name"
@@ -59,6 +76,7 @@ type EntryRow = {
   message: string;
   created_at: Date | string;
   updated_at: Date | string | null;
+  restaurant_entry_count: number;
 };
 
 function toEntry(r: EntryRow): Entry {
@@ -71,6 +89,7 @@ function toEntry(r: EntryRow): Entry {
     message: r.message,
     createdAt: toDate(r.created_at),
     updatedAt: toDateOrNull(r.updated_at),
+    restaurantEntryCount: r.restaurant_entry_count,
   };
 }
 
@@ -112,11 +131,17 @@ export function createGuestbook(db: Db, clock: Partial<Clock> = {}) {
     },
 
     // 최신 작성 순. 수정해도 순서는 작성 시각 기준 그대로다.
-    async listEntries(): Promise<Entry[]> {
+    async listEntries(sort: Sort = "latest"): Promise<Entry[]> {
+      const orderBy = ORDER_BY[isSort(sort) ? sort : "latest"];
       const rows = await db.query<EntryRow>(
-        `SELECT id, name, restaurant, region, rating, message, created_at, updated_at
-         FROM guestbook_entries
-         ORDER BY created_at DESC, id DESC`,
+        `SELECT * FROM (
+           SELECT id, name, restaurant, region, rating, message, created_at, updated_at,
+                  count(*) OVER same_restaurant::int AS restaurant_entry_count,
+                  max(created_at) OVER same_restaurant AS restaurant_latest
+           FROM guestbook_entries
+           WINDOW same_restaurant AS (PARTITION BY restaurant, region)
+         ) e
+         ORDER BY ${orderBy}`,
       );
       return rows.map(toEntry);
     },
