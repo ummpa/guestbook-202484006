@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
-/* 따뜻한 음식 테마: 크림색 바탕, 주황 포인트. 다크 모드 없음. */
+/* 냠냠 테마: 크림색 바탕, 토마토·주황 포인트, 동글동글한 글꼴. 다크 모드 없음. */
 :root {
-  --cream: #fdf6ec;
-  --paper: #fffdf9;
-  --ink: #3b2a1e;
-  --muted: #8a7361;
-  --line: #eadbc8;
-  --orange: #e8742c;
-  --orange-dark: #c95d1a;
-  --orange-soft: #fde7d4;
-  --star: #f2a516;
-  --danger: #c2412d;
+  --cream: #fff7ea;
+  --paper: #fffdf8;
+  --ink: #4a3426;
+  --muted: #957a64;
+  --line: #f0dcc3;
+  --orange: #ff7a3d;
+  --orange-dark: #e2571c;
+  --orange-soft: #ffe8d6;
+  --tomato: #ff5a5f;
+  --mustard: #ffc93c;
+  --leaf: #7cc47f;
+  --star: #ffb400;
+  --danger: #d6453a;
 }
 
 @theme inline {
@@ -23,28 +26,94 @@
   --color-orange: var(--orange);
   --color-orange-dark: var(--orange-dark);
   --color-orange-soft: var(--orange-soft);
+  --color-tomato: var(--tomato);
+  --color-mustard: var(--mustard);
+  --color-leaf: var(--leaf);
   --color-star: var(--star);
   --color-danger: var(--danger);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic",
-    "Noto Sans KR", sans-serif;
+  --font-sans: var(--font-gowun), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-display: var(--font-jua), var(--font-gowun), sans-serif;
 }
 
 html {
   color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--cream);
   color: var(--ink);
+  background-color: var(--cream);
+  /* 식탁보 느낌의 점무늬 */
+  background-image: radial-gradient(rgba(255, 122, 61, 0.12) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-12px) rotate(calc(var(--r, 0deg) * -1));
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.wiggle {
+  animation: wiggle 1.6s ease-in-out infinite;
+}
+
+.pop-in {
+  animation: pop-in 0.45s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float,
+  .wiggle,
+  .pop-in {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 @layer components {
   .page {
-    @apply mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6;
+    @apply mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-6;
   }
 
   .card {
-    @apply rounded-2xl border border-line bg-paper p-4 shadow-[0_1px_2px_rgba(59,42,30,0.06)];
+    @apply rounded-3xl border-2 border-line bg-paper p-5 shadow-[0_4px_0_var(--line)];
   }
 
   .muted {
@@ -52,40 +121,36 @@ body {
   }
 
   .input {
-    @apply w-full rounded-xl border border-line bg-paper px-3 py-2 text-base outline-none
-      focus:border-orange focus:ring-2 focus:ring-orange-soft;
+    @apply w-full rounded-2xl border-2 border-line bg-white px-4 py-2.5 text-base outline-none transition
+      focus:border-orange focus:ring-4 focus:ring-orange-soft;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-1 rounded-xl bg-orange px-4 py-2 font-semibold
-      text-white transition-colors hover:bg-orange-dark disabled:opacity-60;
+    @apply font-display inline-flex items-center justify-center gap-1 rounded-2xl bg-orange px-5 py-2.5 text-lg
+      text-white shadow-[0_4px_0_var(--orange-dark)] transition active:translate-y-1 active:shadow-none
+      hover:brightness-105 disabled:opacity-60;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-1 rounded-xl border border-line bg-paper px-4 py-2
-      font-medium text-ink transition-colors hover:bg-orange-soft;
+    @apply inline-flex items-center justify-center gap-1 rounded-2xl border-2 border-line bg-paper px-4 py-2
+      text-ink transition hover:bg-orange-soft;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-lg px-2 py-1 text-sm font-medium text-danger
+    @apply inline-flex items-center justify-center gap-1 rounded-xl px-3 py-1 text-sm text-danger transition
       hover:bg-red-50;
   }
 
   .chip {
-    @apply inline-flex shrink-0 items-center rounded-full border border-line bg-paper px-3 py-1 text-sm
-      hover:bg-orange-soft;
-  }
-
-  .chip-active {
-    @apply border-orange bg-orange text-white hover:bg-orange-dark;
+    @apply inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-0.5 text-sm font-bold;
   }
 
   .error {
-    @apply rounded-xl bg-red-50 px-3 py-2 text-sm text-danger;
+    @apply rounded-2xl border-2 border-red-200 bg-red-50 px-4 py-2 text-sm text-danger;
   }
 
   .notice {
-    @apply rounded-xl bg-orange-soft px-3 py-2 text-sm;
+    @apply rounded-2xl border-2 border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800;
   }
 
   .label {
@@ -93,6 +158,6 @@ body {
   }
 
   .label > span:first-child {
-    @apply text-sm font-medium;
+    @apply text-sm font-bold;
   }
 }

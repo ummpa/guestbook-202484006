@@ -6,6 +6,7 @@ import { createEntryAction, type FormState } from "./actions";
 
 const initialState: FormState = { ok: false, error: null };
 const empty = { name: "", restaurant: "", region: "", rating: 0, message: "", password: "" };
+const RATING_WORDS = ["골라 주세요", "음… 그냥 그래요 😐", "나쁘지 않아요 🙂", "맛있어요 😋", "정말 맛있어요 🤤", "인생 맛집! 😍"];
 
 // Controlled, so a rejected submission keeps what was typed; cleared once saved.
 export function WriteForm() {
@@ -18,11 +19,19 @@ export function WriteForm() {
   }, initialState);
 
   return (
-    <form action={formAction} className="card flex flex-col gap-3">
-      <h2 className="text-lg font-bold">방명록 남기기</h2>
+    <form action={formAction} className="card relative flex flex-col gap-4 border-dashed bg-white/80">
+      <div className="flex items-center gap-3">
+        <span aria-hidden className="wiggle inline-block text-4xl">
+          📒
+        </span>
+        <div>
+          <h2 className="font-display text-2xl">맛집 한 줄 남기기</h2>
+          <p className="muted text-sm">비밀번호는 나중에 글을 고치거나 지울 때 필요해요.</p>
+        </div>
+      </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="label">
-          <span>이름</span>
+          <span>🙋 이름</span>
           <input
             name="name"
             className="input"
@@ -33,7 +42,7 @@ export function WriteForm() {
           />
         </label>
         <label className="label">
-          <span>비밀번호 (수정·삭제용)</span>
+          <span>🔒 비밀번호 (수정·삭제용)</span>
           <input
             name="password"
             type="password"
@@ -47,7 +56,7 @@ export function WriteForm() {
           />
         </label>
         <label className="label">
-          <span>식당 이름</span>
+          <span>🏠 식당 이름</span>
           <input
             name="restaurant"
             className="input"
@@ -59,7 +68,7 @@ export function WriteForm() {
           />
         </label>
         <label className="label">
-          <span>지역</span>
+          <span>📍 지역</span>
           <select
             name="region"
             className="input"
@@ -80,12 +89,12 @@ export function WriteForm() {
       </div>
 
       <fieldset className="flex flex-col gap-1">
-        <legend className="text-sm font-medium">별점</legend>
+        <legend className="text-sm font-bold">⭐ 별점</legend>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <label
               key={n}
-              className="cursor-pointer rounded text-3xl leading-none has-focus-visible:ring-2 has-focus-visible:ring-orange"
+              className="cursor-pointer rounded-lg text-4xl leading-none transition hover:scale-125 has-focus-visible:ring-2 has-focus-visible:ring-orange"
             >
               <input
                 type="radio"
@@ -101,12 +110,12 @@ export function WriteForm() {
               </span>
             </label>
           ))}
-          <span className="muted ml-2 text-sm">{values.rating > 0 ? `${values.rating}점` : "골라 주세요"}</span>
+          <span className="font-display ml-2 text-base text-orange-dark">{RATING_WORDS[values.rating]}</span>
         </div>
       </fieldset>
 
       <label className="label">
-        <span>메시지</span>
+        <span>💬 메시지</span>
         <textarea
           name="message"
           className="input min-h-28"
@@ -124,10 +133,10 @@ export function WriteForm() {
           {state.error}
         </p>
       )}
-      {state.ok && !pending && <p className="notice">방명록을 남겼어요!</p>}
+      {state.ok && !pending && <p className="notice">🎉 맛집을 남겼어요! 아래 목록에서 확인해 보세요.</p>}
 
       <button className="btn" disabled={pending}>
-        {pending ? "남기는 중…" : "남기기"}
+        {pending ? "🍳 굽는 중…" : "🍽️ 맛집 남기기"}
       </button>
     </form>
   );
