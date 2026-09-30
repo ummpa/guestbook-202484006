@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# guestbook-202484006 · 맛집 방명록
 
-## Getting Started
+전국 식당을 다니며 맛있었던 곳, 소개하고 싶은 곳을 가입 없이 남기는 미니 방명록.
 
-First, run the development server:
+- 개발자: 김서은 · 학번 202484006
+- 스택: Next.js 16 (App Router) + TypeScript, Neon Postgres, Vercel
+- 개발 방식: Claude Code + Matt Pocock's Skills (`/grill-with-docs` → `/to-spec` → `/to-tickets` → `/implement` → `/code-review`)
+
+## 기능
+
+- **작성**: 이름, 글 비밀번호, 식당 이름, 지역, 별점, 메시지를 입력해 글을 남긴다.
+- **조회**: 누구나 전체 글을 최신 작성 순으로 본다.
+- **수정**: 글 비밀번호를 입력해 메시지를 고친다. 틀리면 거부되고 "비밀번호가 일치하지 않습니다."가 표시된다.
+- **삭제**: 글 비밀번호를 입력해 글을 지운다. 틀리면 거부되고 같은 안내가 표시된다.
+- 글 비밀번호는 scrypt 해시로만 저장된다.
+
+## 실행
 
 ```bash
+npm install
+# .env.local 에 DATABASE_URL=<Neon 접속 주소>
+npm run db:schema   # 테이블 생성
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test            # PGlite 위에서 방명록 모듈 테스트
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Vercel 환경변수: `DATABASE_URL`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 문서
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 용어: [GLOSSARY.md](GLOSSARY.md)
+- 결정: [docs/adr](docs/adr)
+- 스펙: [.scratch/exam-guestbook/spec.md](.scratch/exam-guestbook/spec.md)
